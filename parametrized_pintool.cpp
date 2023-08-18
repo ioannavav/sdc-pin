@@ -10,7 +10,7 @@ using std::ofstream;
 using std::string;
 
 KNOB<UINT64> KnobInterval(KNOB_MODE_WRITEONCE, "pintool", "interval", "100", "Interval to instrument instructions");
-KNOB<UINT32> KnobMaxCount(KNOB_MODE_WRITEONCE, "pintool", "maxcount", "10000000", "Maximum count of instructions to instrument");
+KNOB<UINT32> KnobMaxCount(KNOB_MODE_WRITEONCE, "pintool", "maxcount", std::to_string(UINT32_MAX), "Maximum count of instructions to instrument (optional)");
 static UINT32 instrumentedCount = 0; // count of times instrumentation has occurred
 static UINT64 icount = 0;
 
@@ -23,8 +23,8 @@ UINT64 bufferPrintCount = 0;
 VOID printAfter(ADDRINT ip, CONTEXT* ctxt, string dis) {
     std::stringstream ss;
 
-    if (instrumentedCount >= KnobMaxCount.Value()) {
-	PIN_ExitApplication(0);
+    if (KnobMaxCount.Value() != UINT32_MAX && instrumentedCount >= KnobMaxCount.Value()) {
+        PIN_ExitApplication(0);
         return; // stop instrumenting after reaching the maximum count
     }
     icount++;
